@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define LINE 32
+
 struct cell {
   int size;
   char *name;
@@ -13,7 +15,6 @@ struct cell *create_cell(int size, char *name, int name_len);
 void print_cells();
 
 struct cell *head;
-int bit_width;
 
 int main(int argc, char const *argv[]) {
 
@@ -22,10 +23,8 @@ int main(int argc, char const *argv[]) {
     exit(1);
   }
 
-  bit_width = atoi(argv[1]);
-  if (bit_width == 0) {
-    printf("bit width should be greater than 0\n");
-    exit(1);
+  int bit_width = atoi(argv[1]);
+  if(bit_width){
   }
 
   head = create_cell(0, "", 0);
@@ -83,7 +82,7 @@ void print_cells() {
   while (bottom != NULL) {
     // top
     int line_i = 0;
-    while (line_i < bit_width) {
+    while (line_i < LINE) {
       if (top->size <= 0) {
         top = top->next;
         break;
@@ -92,12 +91,12 @@ void print_cells() {
       line_i++;
 
       int cell_i;
-      for (cell_i = 1; cell_i < top->size && line_i < bit_width; cell_i++) {
+      for (cell_i = 1; cell_i < top->size && line_i < LINE; cell_i++) {
         printf("-");
         line_i++;
       }
 
-      if (line_i == bit_width) {
+      if (line_i == LINE) {
         printf("+\n");
         break;
       }
@@ -110,7 +109,7 @@ void print_cells() {
 
     // mid
     line_i = 0;
-    while (line_i < bit_width) {
+    while (line_i < LINE) {
       if (mid->size <= 0) {
         mid = mid->next;
         break;
@@ -119,7 +118,7 @@ void print_cells() {
       line_i++;
 
       int cell_i;
-      for (cell_i = 1; cell_i < mid->size && line_i < bit_width; cell_i++) {
+      for (cell_i = 1; cell_i < mid->size && line_i < LINE; cell_i++) {
         if (cell_i - 1 < mid->name_len) {
           printf("%c", mid->name[cell_i - 1]);
         } else {
@@ -128,7 +127,7 @@ void print_cells() {
         line_i++;
       }
 
-      if (line_i == bit_width) {
+      if (line_i == LINE) {
         printf("|\n");
         break;
       }
@@ -141,7 +140,7 @@ void print_cells() {
 
     // bottom
     line_i = 0;
-    while (line_i < bit_width) {
+    while (line_i < LINE) {
       if (bottom->size <= 0) {
         bottom = bottom->next;
         break;
@@ -150,12 +149,12 @@ void print_cells() {
       line_i++;
 
       int cell_i;
-      for (cell_i = 1; cell_i < bottom->size && line_i < bit_width; cell_i++) {
+      for (cell_i = 1; cell_i < bottom->size && line_i < LINE; cell_i++) {
         printf("-");
         line_i++;
       }
 
-      if (line_i == bit_width) {
+      if (line_i == LINE) {
         bottom->size -= cell_i;
         printf("+\n");
         break;
