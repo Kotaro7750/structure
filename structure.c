@@ -10,6 +10,7 @@ struct cell {
 };
 
 struct cell *create_cell(int size, char *name, int name_len);
+int input_cells();
 void print_cells();
 
 struct cell *head;
@@ -30,8 +31,31 @@ int main(int argc, char const *argv[]) {
 
   head = create_cell(0, "", 0);
 
+  input_cells();
+
+  print_cells();
+  return 0;
+}
+
+struct cell *create_cell(int size, char *name, int name_len) {
+  struct cell *new_cell;
+  new_cell = (struct cell *)calloc(1, sizeof(struct cell));
+
+  new_cell->size = size;
+  new_cell->name_len = name_len;
+  new_cell->name = (char *)calloc(name_len + 1, sizeof(char));
+
+  snprintf(new_cell->name, name_len + 1, "%s", name);
+
+  new_cell->next = NULL;
+
+  return new_cell;
+}
+
+int input_cells() {
   struct cell *tmp;
   tmp = head;
+  int cell_num = 0;
 
   while (1) {
     int size;
@@ -52,25 +76,11 @@ int main(int argc, char const *argv[]) {
 
     tmp->next = create_cell(size, name, name_len);
     tmp = tmp->next;
+
+    cell_num++;
   }
 
-  print_cells();
-  return 0;
-}
-
-struct cell *create_cell(int size, char *name, int name_len) {
-  struct cell *new_cell;
-  new_cell = (struct cell *)calloc(1, sizeof(struct cell));
-
-  new_cell->size = size;
-  new_cell->name_len = name_len;
-  new_cell->name = (char *)calloc(name_len + 1, sizeof(char));
-
-  snprintf(new_cell->name, name_len + 1, "%s", name);
-
-  new_cell->next = NULL;
-
-  return new_cell;
+  return cell_num;
 }
 
 void print_cells() {
