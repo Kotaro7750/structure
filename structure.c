@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 struct cell {
   int size;
@@ -9,23 +10,44 @@ struct cell {
   struct cell *next;
 };
 
+void print_help(void);
 struct cell *create_cell(int size, char *name, int name_len);
 int input_cells();
 void print_cells(int);
 
 struct cell *head;
 
-int main(int argc, char const *argv[]) {
+int main(int argc, char *argv[]) {
 
-  if (argc < 2) {
-    printf("USAGE: ./structure [bit width]\n");
-    exit(1);
-  }
+  int opt;
 
-  int bit_width = atoi(argv[1]);
-  if (bit_width == 0) {
-    printf("bit width should be greater than 0\n");
-    exit(1);
+  int bit_width = 32;
+
+  while ((opt = getopt(argc, argv, "hw:")) != -1) {
+    switch (opt) {
+    case 'h':
+      print_help();
+      return 0;
+      break;
+
+    case 'w':
+      if (optarg == NULL) {
+        printf("USAGE: ./structure [bit width]\n");
+        print_help();
+        return 0;
+      }
+      bit_width = atoi(optarg);
+      if (bit_width == 0) {
+        fprintf(stderr, "field width should be greater than 0.\n");
+        exit(1);
+      }
+      break;
+
+    default:
+      print_help();
+      return 0;
+      break;
+    }
   }
 
   head = create_cell(0, "", 0);
@@ -33,6 +55,12 @@ int main(int argc, char const *argv[]) {
   int cell_num = input_cells();
   print_cells(bit_width);
   return 0;
+}
+
+void print_help(void) {
+  printf("USAGE: structure [-w <value>] [-h]\n\n");
+  printf("\t-w: specify field width. default is 32.\n");
+  printf("\t-h: show help.\n");
 }
 
 struct cell *create_cell(int size, char *name, int name_len) {
