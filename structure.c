@@ -75,7 +75,7 @@ int main(int argc, char *argv[]) {
 
 void print_help(void) {
   printf("USAGE: structure [-w <value>] [-h]\n\n");
-  printf("\t-w: specify field width. default is 32.\n");
+  printf("\t-w: specify field unit width. default is 32.\n");
   printf("\t-h: show help.\n");
 }
 
