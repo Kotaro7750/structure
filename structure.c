@@ -110,6 +110,7 @@ int input_cells() {
 }
 
 void print_cells(int bit_width) {
+  struct cell *count = head->next;
   struct cell *top = head->next;
   struct cell *mid = head->next;
   struct cell *bottom = head->next;
@@ -118,11 +119,16 @@ void print_cells(int bit_width) {
 
   while (bottom != NULL) {
     // count
-    printf("%d", line);
-    for (int i = 1; i < bit_width; i++) {
-      printf(" ");
+    if (count->size <= 0) {
+      count = count->next;
+    } else {
+      printf("%d", line * bit_width);
+      for (int i = 1; i < bit_width; i++) {
+        printf(" ");
+      }
+      printf("%d\n", (line + 1) * bit_width - 1);
     }
-    printf("%d\n", (line + 1) * bit_width - 1);
+
     // top
     int line_i = 0;
     while (line_i < bit_width) {
@@ -208,5 +214,6 @@ void print_cells(int bit_width) {
         break;
       }
     }
+    line++;
   }
 }

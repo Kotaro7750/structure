@@ -1,7 +1,7 @@
 GCC=gcc
 
 structure: structure.c
-	$(GCC) -o structure $^
+	$(GCC) -g -o structure $^
 
 run: structure
 	./structure
