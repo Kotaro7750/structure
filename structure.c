@@ -11,10 +11,9 @@ struct cell {
 
 struct cell *create_cell(int size, char *name, int name_len);
 int input_cells();
-void print_cells();
+void print_cells(int);
 
 struct cell *head;
-int bit_width;
 
 int main(int argc, char const *argv[]) {
 
@@ -23,7 +22,7 @@ int main(int argc, char const *argv[]) {
     exit(1);
   }
 
-  bit_width = atoi(argv[1]);
+  int bit_width = atoi(argv[1]);
   if (bit_width == 0) {
     printf("bit width should be greater than 0\n");
     exit(1);
@@ -31,9 +30,8 @@ int main(int argc, char const *argv[]) {
 
   head = create_cell(0, "", 0);
 
-  input_cells();
-
-  print_cells();
+  int cell_num = input_cells();
+  print_cells(bit_width);
   return 0;
 }
 
@@ -83,14 +81,20 @@ int input_cells() {
   return cell_num;
 }
 
-void print_cells() {
+void print_cells(int bit_width) {
   struct cell *top = head->next;
   struct cell *mid = head->next;
   struct cell *bottom = head->next;
 
-  int seek_pos = 0;
+  int line = 0;
 
   while (bottom != NULL) {
+    // count
+    printf("%d", line);
+    for (int i = 1; i < bit_width; i++) {
+      printf(" ");
+    }
+    printf("%d\n", (line + 1) * bit_width - 1);
     // top
     int line_i = 0;
     while (line_i < bit_width) {
