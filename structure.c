@@ -4,7 +4,7 @@
 #include <string.h>
 #include <unistd.h>
 
-enum line_type { Count, Top, Mid, Bottom };
+enum line_type { Top, Mid, Bottom };
 
 struct cell {
   int size;
@@ -17,8 +17,11 @@ void print_help(void);
 struct cell *create_cell(int size, char *name, int name_len);
 int input_cells();
 void print_cells(int);
+void print_count(struct cell **seek, int line, int bit_width);
 void print_line(struct cell **seek, char partition, char padding,
                 enum line_type line_type, int bit_width);
+
+int get_numstr_length(int num);
 
 struct cell *head;
 
@@ -124,21 +127,51 @@ void print_cells(int bit_width) {
 
   while (bottom != NULL) {
     // count
-    if (count->size <= 0) {
-      count = count->next;
-    } else {
-      printf("%d", line * bit_width);
-      for (int i = 1; i < bit_width; i++) {
-        printf(" ");
-      }
-      printf("%d\n", (line + 1) * bit_width - 1);
-    }
+    print_count(&count, line, bit_width);
 
     print_line(&top, '+', '-', Top, bit_width);
     print_line(&mid, '|', ' ', Mid, bit_width);
     print_line(&bottom, '+', '-', Bottom, bit_width);
 
-    line++;
+    if (bottom != NULL && bottom->size > 0) {
+      line++;
+    }
+  }
+}
+
+void print_count(struct cell **seek, int line, int bit_width) {
+  int line_i = 0;
+  while (line_i < bit_width) {
+    if ((*seek)->size <= 0) {
+      (*seek) = (*seek)->next;
+      break;
+    }
+
+    printf("%d", line_i + line * bit_width);
+    line_i++;
+
+    //はじめに出力した数字の桁数による補正用
+    int correction = get_numstr_length(line_i + line * bit_width) - 1;
+    line_i += correction;
+
+    int cell_i;
+    for (cell_i = 1; cell_i < (*seek)->size - correction && line_i < bit_width;
+         cell_i++) {
+      printf(" ");
+      line_i++;
+    }
+
+    if (line_i == bit_width) {
+      printf("%d\n", (line + 1) * bit_width - 1);
+      break;
+    }
+
+    if ((*seek)->next == NULL) {
+      printf("%d\n", line_i + line * bit_width);
+      (*seek) = (*seek)->next;
+      break;
+    }
+    (*seek) = (*seek)->next;
   }
 }
 
@@ -176,4 +209,16 @@ void print_line(struct cell **seek, char partition, char padding,
       break;
     }
   }
+}
+
+int get_numstr_length(int num) {
+  if (num == 0) {
+    return 1;
+  }
+  int digit = 0;
+  while (num != 0) {
+    num /= 10;
+    digit++;
+  }
+  return digit;
 }
