@@ -198,15 +198,27 @@ void print_line(struct cell **seek, char partition, char padding,
       (*seek) = (*seek)->next;
       break;
     }
-    printf("%c", partition);
+
+    // Midで行をまたいで表示するときは先頭の|は表示しない
+    if (line_type != Mid || (*seek)->width == (*seek)->unprinted_size) {
+      printf("%c", partition);
+    } else {
+      printf(" ");
+    }
     line_i++;
 
     int cell_i;
     for (cell_i = 1; cell_i < (*seek)->unprinted_size && line_i < bit_width;
          cell_i++) {
+      // 名前が幅を超えてしまう場合は何も表示しない
       if ((cell_i - 1 < (*seek)->name_len) && line_type == Mid &&
           (*seek)->is_exceed == false) {
-        printf("%c", (*seek)->name[cell_i - 1]);
+        //行をまたいだ場合は後半には何も表示しない
+        if ((*seek)->width == (*seek)->unprinted_size) {
+          printf("%c", (*seek)->name[cell_i - 1]);
+        } else {
+          printf("%c", padding);
+        }
       } else {
         printf("%c", padding);
       }
@@ -217,7 +229,10 @@ void print_line(struct cell **seek, char partition, char padding,
       if (line_type == Bottom) {
         (*seek)->unprinted_size -= cell_i;
       }
-      printf("%c\n", partition);
+      if (line_type != Mid) {
+        printf("%c", partition);
+      }
+      printf("\n");
       break;
     }
     (*seek) = (*seek)->next;
