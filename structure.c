@@ -1,7 +1,10 @@
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+
+enum line_type { Count, Top, Mid, Bottom };
 
 struct cell {
   int size;
@@ -14,6 +17,8 @@ void print_help(void);
 struct cell *create_cell(int size, char *name, int name_len);
 int input_cells();
 void print_cells(int);
+void print_line(struct cell **seek, char partition, char padding,
+                enum line_type line_type, int bit_width);
 
 struct cell *head;
 
@@ -129,91 +134,46 @@ void print_cells(int bit_width) {
       printf("%d\n", (line + 1) * bit_width - 1);
     }
 
-    // top
-    int line_i = 0;
-    while (line_i < bit_width) {
-      if (top->size <= 0) {
-        top = top->next;
-        break;
-      }
-      printf("+");
-      line_i++;
+    print_line(&top, '+', '-', Top, bit_width);
+    print_line(&mid, '|', ' ', Mid, bit_width);
+    print_line(&bottom, '+', '-', Bottom, bit_width);
 
-      int cell_i;
-      for (cell_i = 1; cell_i < top->size && line_i < bit_width; cell_i++) {
-        printf("-");
-        line_i++;
-      }
-
-      if (line_i == bit_width) {
-        printf("+\n");
-        break;
-      }
-      top = top->next;
-      if (top == NULL) {
-        printf("+\n");
-        break;
-      }
-    }
-
-    // mid
-    line_i = 0;
-    while (line_i < bit_width) {
-      if (mid->size <= 0) {
-        mid = mid->next;
-        break;
-      }
-      printf("|");
-      line_i++;
-
-      int cell_i;
-      for (cell_i = 1; cell_i < mid->size && line_i < bit_width; cell_i++) {
-        if (cell_i - 1 < mid->name_len) {
-          printf("%c", mid->name[cell_i - 1]);
-        } else {
-          printf(" ");
-        }
-        line_i++;
-      }
-
-      if (line_i == bit_width) {
-        printf("|\n");
-        break;
-      }
-      mid = mid->next;
-      if (mid == NULL) {
-        printf("|\n");
-        break;
-      }
-    }
-
-    // bottom
-    line_i = 0;
-    while (line_i < bit_width) {
-      if (bottom->size <= 0) {
-        bottom = bottom->next;
-        break;
-      }
-      printf("+");
-      line_i++;
-
-      int cell_i;
-      for (cell_i = 1; cell_i < bottom->size && line_i < bit_width; cell_i++) {
-        printf("-");
-        line_i++;
-      }
-
-      if (line_i == bit_width) {
-        bottom->size -= cell_i;
-        printf("+\n");
-        break;
-      }
-      bottom = bottom->next;
-      if (bottom == NULL) {
-        printf("+\n");
-        break;
-      }
-    }
     line++;
+  }
+}
+
+void print_line(struct cell **seek, char partition, char padding,
+                enum line_type line_type, int bit_width) {
+  int line_i = 0;
+  while (line_i < bit_width) {
+    if ((*seek)->size <= 0) {
+      (*seek) = (*seek)->next;
+      break;
+    }
+    printf("%c", partition);
+    line_i++;
+
+    int cell_i;
+    for (cell_i = 1; cell_i < (*seek)->size && line_i < bit_width; cell_i++) {
+      if ((cell_i - 1 < (*seek)->name_len) && line_type == Mid) {
+        printf("%c", (*seek)->name[cell_i - 1]);
+      } else {
+        printf("%c", padding);
+      }
+      line_i++;
+    }
+
+    if (line_i == bit_width) {
+      if (line_type == Bottom) {
+        (*seek)->size -= cell_i;
+      }
+      printf("%c\n", partition);
+      break;
+    }
+    (*seek) = (*seek)->next;
+    if ((*seek) == NULL) {
+      printf("%c\n", partition);
+      break;
+    }
   }
 }
