@@ -213,7 +213,7 @@ void print_line(struct cell **seek, char partition, char padding,
       // 名前が幅を超えてしまう場合は何も表示しない
       if ((cell_i - 1 < (*seek)->name_len) && line_type == Mid &&
           (*seek)->is_exceed == false) {
-        //行をまたいだ場合は後半には何も表示しない
+        //行をまたいだ場合は後半には名前を表示しない
         if ((*seek)->width == (*seek)->unprinted_size) {
           printf("%c", (*seek)->name[cell_i - 1]);
         } else {
@@ -231,6 +231,10 @@ void print_line(struct cell **seek, char partition, char padding,
       }
       if (line_type != Mid) {
         printf("%c", partition);
+      } else {
+        if ((*seek)->unprinted_size - cell_i <= 0) {
+          printf("%c", partition);
+        }
       }
       printf("\n");
       break;
