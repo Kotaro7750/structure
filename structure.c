@@ -156,26 +156,51 @@ void print_cells(int bit_width) {
 
 void print_count(struct cell **seek, int line, int bit_width) {
   int line_i = 0;
+  int prev_overflow = 0;
+
   while (line_i < bit_width) {
-    //既に書き終わったセルに関しては無視する
+    // 既に書き終わったセルに関しては無視する
     if ((*seek)->unprinted_size <= 0) {
       (*seek) = (*seek)->next;
       break;
     }
 
-    //その行の開始ビットを出力
-    printf("%d", line_i + line * bit_width);
+    int correction;
+    if (prev_overflow == 0) {
+      //前のセルのカウントが溢れてなかったらその行の開始ビットを出力
+      printf("%d", line_i + line * bit_width);
 
-    //開始ビットの桁数による補正用 (ひと桁なら0)
-    int correction = get_numstr_length(line_i + line * bit_width) - 1;
-    line_i += correction + 1;
+      //開始ビットの桁数による補正用 (ひと桁なら0)
+      correction = get_numstr_length(line_i + line * bit_width) - 1;
+      line_i += correction + 1;
 
-    int cell_i = 1;
-    for (cell_i = 1;
-         cell_i < (*seek)->unprinted_size - correction && line_i < bit_width;
-         cell_i++) {
-      printf(" ");
-      line_i++;
+      // correction+1:実際に出力した数->unprinted_sizeがこれを超えるとオーバーフロー（通常時）
+      if (correction + 1 > (*seek)->unprinted_size) {
+        prev_overflow = correction + 1 - (*seek)->unprinted_size;
+      } else {
+        prev_overflow = 0;
+      }
+
+      int cell_i = 1;
+      for (cell_i = 1;
+           cell_i < (*seek)->unprinted_size - correction && line_i < bit_width;
+           cell_i++) {
+        printf(" ");
+        line_i++;
+      }
+    } else {
+      if (prev_overflow <= (*seek)->unprinted_size) {
+        int cell_i;
+        for (cell_i = prev_overflow;
+             cell_i < (*seek)->unprinted_size && line_i < bit_width; cell_i++) {
+          printf(" ");
+          line_i++;
+        }
+
+        prev_overflow = 0;
+      } else {
+        prev_overflow -= (*seek)->unprinted_size;
+      }
     }
 
     if (line_i == bit_width) {
