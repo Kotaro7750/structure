@@ -12,7 +12,7 @@ struct cell {
   char *name;
   int name_len;
   struct cell *next;
-  bool is_exceed;
+  bool is_omitted;
 };
 
 void print_help(void);
@@ -22,7 +22,7 @@ void print_cells(int);
 void print_count(struct cell **seek, int line, int bit_width);
 void print_line(struct cell **seek, char partition, char padding,
                 enum line_type line_type, int bit_width);
-void print_exceed();
+void print_omitted();
 
 int get_numstr_length(int num);
 
@@ -68,7 +68,7 @@ int main(int argc, char *argv[]) {
 
   if (is_exceed_cell_exist) {
     printf("\n");
-    print_exceed();
+    print_omitted();
   }
   return 0;
 }
@@ -91,9 +91,9 @@ struct cell *create_cell(int width, char *name, int name_len) {
   snprintf(new_cell->name, name_len + 1, "%s", name);
 
   if (name_len >= width) {
-    new_cell->is_exceed = true;
+    new_cell->is_omitted = true;
   } else {
-    new_cell->is_exceed = false;
+    new_cell->is_omitted = false;
   }
   new_cell->next = NULL;
 
@@ -124,7 +124,7 @@ bool input_cells() {
 
     tmp->next = create_cell(width, name, name_len);
     tmp = tmp->next;
-    if (tmp->is_exceed) {
+    if (tmp->is_omitted) {
       is_exceed_cell_exist = true;
     }
   }
@@ -157,18 +157,20 @@ void print_cells(int bit_width) {
 void print_count(struct cell **seek, int line, int bit_width) {
   int line_i = 0;
   while (line_i < bit_width) {
+    //既に書き終わったセルに関しては無視する
     if ((*seek)->unprinted_size <= 0) {
       (*seek) = (*seek)->next;
       break;
     }
 
+    //その行の開始ビットを出力
     printf("%d", line_i + line * bit_width);
 
-    //はじめに出力した数字の桁数による補正用
+    //開始ビットの桁数による補正用 (ひと桁なら0)
     int correction = get_numstr_length(line_i + line * bit_width) - 1;
     line_i += correction + 1;
 
-    int cell_i;
+    int cell_i = 1;
     for (cell_i = 1;
          cell_i < (*seek)->unprinted_size - correction && line_i < bit_width;
          cell_i++) {
@@ -194,30 +196,32 @@ void print_line(struct cell **seek, char partition, char padding,
                 enum line_type line_type, int bit_width) {
   int line_i = 0;
   while (line_i < bit_width) {
+    //既に書き終わったセルに関しては無視する
     if ((*seek)->unprinted_size <= 0) {
       (*seek) = (*seek)->next;
       break;
     }
 
     // Midで行をまたいで表示するときは先頭の|は表示しない
-    if (line_type != Mid || (*seek)->width == (*seek)->unprinted_size) {
-      printf("%c", partition);
-    } else {
+    if (line_type == Mid && (*seek)->width != (*seek)->unprinted_size) {
       printf(" ");
+    } else {
+      printf("%c", partition);
     }
     line_i++;
 
-    int cell_i;
-    for (cell_i = 1; cell_i < (*seek)->unprinted_size && line_i < bit_width;
+    int cell_i = 1;
+    for (cell_i = 1;
+         cell_i <= ((*seek)->unprinted_size - 1) && (line_i <= bit_width - 1);
          cell_i++) {
-      // 名前が幅を超えてしまう場合は何も表示しない
-      if ((cell_i - 1 < (*seek)->name_len) && line_type == Mid &&
-          (*seek)->is_exceed == false) {
-        //行をまたいだ場合は後半には名前を表示しない
-        if ((*seek)->width == (*seek)->unprinted_size) {
-          printf("%c", (*seek)->name[cell_i - 1]);
-        } else {
+      // Midで省略されておらず、まだ出力するべき名前が残っている場合は名前を出力する
+      if (line_type == Mid && (cell_i - 1 < (*seek)->name_len) &&
+          (*seek)->is_omitted == false) {
+        //行をまたいだ後半には名前を表示しない
+        if ((*seek)->width != (*seek)->unprinted_size) {
           printf("%c", padding);
+        } else {
+          printf("%c", (*seek)->name[cell_i - 1]);
         }
       } else {
         printf("%c", padding);
@@ -225,21 +229,26 @@ void print_line(struct cell **seek, char partition, char padding,
       line_i++;
     }
 
+    //行の最大幅に達したとき
     if (line_i == bit_width) {
+      // Bottomだったら未出力のサイズを変更する
       if (line_type == Bottom) {
         (*seek)->unprinted_size -= cell_i;
       }
-      if (line_type != Mid) {
-        printf("%c", partition);
-      } else {
+      // Midで次の行に出力しない場合は区切り文字を出力する
+      if (line_type == Mid) {
         if ((*seek)->unprinted_size - cell_i <= 0) {
           printf("%c", partition);
         }
+      } else {
+        printf("%c", partition);
       }
       printf("\n");
       break;
     }
+
     (*seek) = (*seek)->next;
+
     if ((*seek) == NULL) {
       printf("%c\n", partition);
       break;
@@ -259,14 +268,14 @@ int get_numstr_length(int num) {
   return digit;
 }
 
-void print_exceed() {
+void print_omitted() {
   printf("---ommitted field---\n");
   struct cell *tmp = head->next;
 
   int count = 0;
 
   while (tmp != NULL) {
-    if (tmp->is_exceed) {
+    if (tmp->is_omitted) {
       if (tmp->width == 1) {
         int padding = get_numstr_length(count) + 1;
         for (int i = 0; i < padding; i++) {
