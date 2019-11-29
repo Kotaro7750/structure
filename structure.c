@@ -184,7 +184,7 @@ void print_count(struct cell **seek, int line, int bit_width) {
     }
 
     if ((*seek)->next == NULL) {
-      printf("%d\n", line_i + line * bit_width);
+      printf("%d\n", line_i + line * bit_width - 1);
       (*seek) = (*seek)->next;
       break;
     }
